@@ -195,4 +195,94 @@
 
             filtered.forEach(item => {
                 container.innerHTML += `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-gray-800
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-gray-800 card-hover">
+                        <div class="flex justify-between items-center mb-3 text-[10px] font-bold uppercase tracking-wider">
+                            <span class="text-blue-600 bg-blue-50 px-2 py-1 rounded">${item.dept}</span>
+                            <span class="text-gray-400">受理：${item.handledBy || '权益部'}</span>
+                        </div>
+                        <h4 class="text-sm font-bold mb-2">${item.summary || item.title}</h4>
+                        <div class="w-full bg-gray-100 h-1 rounded-full overflow-hidden mb-2">
+                            <div class="bg-blue-600 h-full" style="width: ${item.progress}%"></div>
+                        </div>
+                        <p class="text-[10px] text-gray-500 italic">进展：${item.reply || '正在处理中'}</p>
+                    </div>`;
+            });
+        }
+
+        // 渲染个人记录
+        function renderMine() {
+            const data = getDB();
+            const container = document.getElementById('mine-list');
+            container.innerHTML = data.length ? '' : '<div class="bg-white p-10 rounded-3xl text-center text-gray-400">还没有提交过建言哦</div>';
+            data.forEach(item => {
+                const color = item.status === '已驳回' ? 'text-red-500' : 'text-blue-600';
+                container.innerHTML += `
+                    <div class="bg-white p-6 rounded-2xl border-l-4 ${item.status==='已驳回'?'border-red-500':'border-blue-600'} shadow-md mb-4">
+                        <div class="flex justify-between items-center mb-4 text-xs font-bold">
+                            <span>${item.title}</span>
+                            <span class="${color}">${item.status}</span>
+                        </div>
+                        <div class="text-[11px] text-gray-500 mb-4 bg-gray-50 p-3 rounded-xl">
+                            <p><strong>现状：</strong>${item.issue}</p>
+                        </div>
+                        ${item.reply ? `<p class="p-3 bg-blue-50 rounded-xl text-[11px] text-blue-800 font-bold border border-blue-100 italic">回复：${item.reply}</p>` : ''}
+                    </div>`;
+            });
+        }
+
+        // 管理员过滤与渲染
+        function switchAdminFilter(f) {
+            adminDisplayFilter = f;
+            document.getElementById('filter-pending').className = (f === 'pending') ? 'flex-1 py-3 rounded-xl text-xs font-bold admin-tab-active' : 'flex-1 py-3 rounded-xl text-xs font-bold text-gray-400';
+            document.getElementById('filter-done').className = (f === 'done') ? 'flex-1 py-3 rounded-xl text-xs font-bold admin-tab-active' : 'flex-1 py-3 rounded-xl text-xs font-bold text-gray-400';
+            renderAdmin();
+        }
+
+        function renderAdmin() {
+            const data = getDB();
+            const container = document.getElementById('admin-list');
+            container.innerHTML = '';
+            const filtered = data.filter(i => adminDisplayFilter === 'pending' ? i.status === '待审核' : i.status !== '待审核');
+
+            filtered.forEach(item => {
+                container.innerHTML += `
+                    <div class="bg-white/10 p-6 rounded-3xl border border-white/10 text-white shadow-xl">
+                        <div class="text-[10px] text-gray-500 mb-4 border-b border-white/5 pb-2 flex justify-between">
+                            <span>年级：${item.userType} | 电话：${item.phone}</span>
+                            <span class="text-blue-400 font-bold">${item.dept}</span>
+                        </div>
+                        <h4 class="text-lg font-bold mb-4">${item.title}</h4>
+                        <div class="bg-black/40 p-4 rounded-xl text-xs space-y-2 mb-6 text-gray-300">
+                            <p><strong>描述：</strong>${item.issue}</p>
+                            <p><strong>建议：</strong>${item.solution}</p>
+                        </div>
+                        <div class="space-y-3">
+                            <input id="summary-${item.id}" class="w-full bg-black/40 border border-blue-500/30 rounded-xl p-3 text-xs text-white outline-none" placeholder="公开摘要（用于展示）" value="${item.summary || ''}">
+                            <textarea id="reply-${item.id}" rows="2" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white outline-none" placeholder="回复内容...">${item.reply || ''}</textarea>
+                        </div>
+                        <div class="flex gap-2 mt-6">
+                            <button onclick="updateStatus('${item.id}', '已通过', 25)" class="flex-1 bg-blue-600 py-3 rounded-xl font-bold text-xs hover:bg-blue-700 transition">通过并公示</button>
+                            <button onclick="updateStatus('${item.id}', '已完成', 100)" class="flex-1 bg-green-600 py-3 rounded-xl font-bold text-xs hover:bg-green-700 transition">完成</button>
+                            <button onclick="updateStatus('${item.id}', '已驳回', 0)" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs hover:bg-red-700 transition">驳回</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function updateStatus(id, status, progress) {
+            const summary = document.getElementById('summary-' + id).value;
+            const reply = document.getElementById('reply-' + id).value || "已收到，正在处理。";
+            let list = getDB();
+            list = list.map(i => i.id == id ? {...i, status, progress, reply, summary, handledBy: currentAdminName} : i);
+            saveDB(list);
+            renderAdmin();
+        }
+
+        // 初始化加载
+        window.onload = () => {
+            renderPublic();
+            console.log("NWNU Feedback System V8.1 Initialized.");
+        };
+    </script>
+</body>
+</html>
