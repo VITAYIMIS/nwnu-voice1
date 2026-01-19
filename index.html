@@ -5,14 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NWNU 智慧建言 | 数字化治理平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* 保持中文字体优化，不依赖谷歌服务 */
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; 
-            background-color: #f8fafc; 
-            color: #1e293b; 
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f8fafc; color: #1e293b; }
         .tab-active { color: #2563eb; border-bottom: 3px solid #2563eb; font-weight: bold; }
         .admin-theme { background-color: #0c0a09 !important; color: #f8fafc !important; }
         .admin-tab-active { background-color: #ef4444 !important; color: white !important; }
@@ -25,7 +21,7 @@
         <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-2 cursor-pointer" id="logo-entry" ondblclick="showLoginModal()">
                 <div class="bg-blue-600 p-2 rounded-lg text-white shadow-lg"><i class="fas fa-university"></i></div>
-                <span class="font-bold text-gray-800 text-lg" id="nav-title">智慧建言 <span class="text-blue-600 text-xs">V8.1-CN</span></span>
+                <span class="font-bold text-gray-800 text-lg" id="nav-title">智慧建言 <span class="text-blue-600 text-xs">V8</span></span>
             </div>
             
             <div id="user-nav" class="flex space-x-4 text-sm font-medium">
@@ -88,31 +84,23 @@
         </section>
     </main>
 
-    <footer class="mt-20 py-10 text-center">
-        <p class="text-gray-400 text-xs">© 西北师范大学数字化治理项目组</p>
-        <button onclick="showLoginModal()" class="text-gray-200 text-[10px] mt-2 underline">后台鉴权</button>
-    </footer>
-
     <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-gray-800">
             <h4 class="text-xl font-bold mb-6 text-center italic">身份核验</h4>
             <input type="password" id="admin-pass" class="w-full border border-gray-200 rounded-xl p-4 mb-4 text-center tracking-widest outline-none" placeholder="输入管理暗号">
             <button onclick="loginAdmin()" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold">验证身份</button>
-            <button onclick="hideLoginModal()" class="w-full mt-2 text-gray-400 text-xs text-center block">取消</button>
+            <button onclick="hideLoginModal()" class="w-full mt-2 text-gray-400 text-xs">取消</button>
         </div>
     </div>
 
     <script>
-        // 管理员预设
-        const USERS = { "nwnu1902": "校学生会管理员", "admin": "总管理员" };
+        const USERS = { "123": "校学生会管理员", "admin": "总管理员" };
         let currentAdminName = "";
         let adminDisplayFilter = 'pending';
 
-        // 数据存储逻辑
-        function getDB() { return JSON.parse(localStorage.getItem('nwnu_v8_local') || '[]'); }
-        function saveDB(list) { localStorage.setItem('nwnu_v8_local', JSON.stringify(list)); }
+        function getDB() { return JSON.parse(localStorage.getItem('nwnu_final_v8') || '[]'); }
+        function saveDB(list) { localStorage.setItem('nwnu_final_v8', JSON.stringify(list)); }
 
-        // 导航切换
         function switchTab(tab) {
             ['public', 'submit', 'mine', 'admin'].forEach(t => {
                 const sec = document.getElementById('section-' + t);
@@ -131,7 +119,6 @@
             if(tab === 'mine') renderMine();
         }
 
-        // 登录逻辑
         function showLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function hideLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
@@ -147,12 +134,11 @@
                 document.getElementById('current-user-tag').innerText = currentAdminName;
                 hideLoginModal();
                 switchTab('admin');
-            } else { alert("暗号不正确！提示：学校创建年份"); }
+            } else { alert("暗号不正确！"); }
         }
 
         function logoutAdmin() { location.reload(); }
 
-        // 表单处理
         function handleFormSubmit(e) {
             e.preventDefault();
             const data = {
@@ -173,7 +159,6 @@
             switchTab('mine');
         }
 
-        // 渲染公示列表
         function renderPublic() {
             const data = getDB();
             const keyword = document.getElementById('searchInput').value.toLowerCase();
@@ -196,9 +181,9 @@
             filtered.forEach(item => {
                 container.innerHTML += `
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-gray-800 card-hover">
-                        <div class="flex justify-between items-center mb-3 text-[10px] font-bold uppercase tracking-wider">
-                            <span class="text-blue-600 bg-blue-50 px-2 py-1 rounded">${item.dept}</span>
-                            <span class="text-gray-400">受理：${item.handledBy || '权益部'}</span>
+                        <div class="flex justify-between items-center mb-3 text-[10px] font-bold">
+                            <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${item.dept}</span>
+                            <span class="text-gray-400">处理：${item.handledBy || '权益部'}</span>
                         </div>
                         <h4 class="text-sm font-bold mb-2">${item.summary || item.title}</h4>
                         <div class="w-full bg-gray-100 h-1 rounded-full overflow-hidden mb-2">
@@ -209,7 +194,6 @@
             });
         }
 
-        // 渲染个人记录
         function renderMine() {
             const data = getDB();
             const container = document.getElementById('mine-list');
@@ -217,7 +201,7 @@
             data.forEach(item => {
                 const color = item.status === '已驳回' ? 'text-red-500' : 'text-blue-600';
                 container.innerHTML += `
-                    <div class="bg-white p-6 rounded-2xl border-l-4 ${item.status==='已驳回'?'border-red-500':'border-blue-600'} shadow-md mb-4">
+                    <div class="bg-white p-6 rounded-2xl border-l-4 ${item.status==='已驳回'?'border-red-500':'border-blue-600'} shadow-md">
                         <div class="flex justify-between items-center mb-4 text-xs font-bold">
                             <span>${item.title}</span>
                             <span class="${color}">${item.status}</span>
@@ -225,12 +209,11 @@
                         <div class="text-[11px] text-gray-500 mb-4 bg-gray-50 p-3 rounded-xl">
                             <p><strong>现状：</strong>${item.issue}</p>
                         </div>
-                        ${item.reply ? `<p class="p-3 bg-blue-50 rounded-xl text-[11px] text-blue-800 font-bold border border-blue-100 italic">回复：${item.reply}</p>` : ''}
+                        ${item.reply ? `<p class="p-3 bg-blue-50 rounded-xl text-[11px] text-blue-800 font-bold border border-blue-100">回复：${item.reply}</p>` : ''}
                     </div>`;
             });
         }
 
-        // 管理员过滤与渲染
         function switchAdminFilter(f) {
             adminDisplayFilter = f;
             document.getElementById('filter-pending').className = (f === 'pending') ? 'flex-1 py-3 rounded-xl text-xs font-bold admin-tab-active' : 'flex-1 py-3 rounded-xl text-xs font-bold text-gray-400';
@@ -252,18 +235,18 @@
                             <span class="text-blue-400 font-bold">${item.dept}</span>
                         </div>
                         <h4 class="text-lg font-bold mb-4">${item.title}</h4>
-                        <div class="bg-black/40 p-4 rounded-xl text-xs space-y-2 mb-6 text-gray-300">
+                        <div class="bg-black/40 p-4 rounded-xl text-xs space-y-2 mb-6">
                             <p><strong>描述：</strong>${item.issue}</p>
                             <p><strong>建议：</strong>${item.solution}</p>
                         </div>
                         <div class="space-y-3">
-                            <input id="summary-${item.id}" class="w-full bg-black/40 border border-blue-500/30 rounded-xl p-3 text-xs text-white outline-none" placeholder="公开摘要（用于展示）" value="${item.summary || ''}">
-                            <textarea id="reply-${item.id}" rows="2" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white outline-none" placeholder="回复内容...">${item.reply || ''}</textarea>
+                            <input id="summary-${item.id}" class="w-full bg-black/40 border border-blue-500/30 rounded-xl p-3 text-xs text-white outline-none" placeholder="一句话摘要" value="${item.summary || ''}">
+                            <textarea id="reply-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white outline-none" placeholder="回复内容...">${item.reply || ''}</textarea>
                         </div>
                         <div class="flex gap-2 mt-6">
-                            <button onclick="updateStatus('${item.id}', '已通过', 25)" class="flex-1 bg-blue-600 py-3 rounded-xl font-bold text-xs hover:bg-blue-700 transition">通过并公示</button>
-                            <button onclick="updateStatus('${item.id}', '已完成', 100)" class="flex-1 bg-green-600 py-3 rounded-xl font-bold text-xs hover:bg-green-700 transition">完成</button>
-                            <button onclick="updateStatus('${item.id}', '已驳回', 0)" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs hover:bg-red-700 transition">驳回</button>
+                            <button onclick="updateStatus('${item.id}', '已通过', 25)" class="flex-1 bg-blue-600 py-3 rounded-xl font-bold text-xs">通过</button>
+                            <button onclick="updateStatus('${item.id}', '已完成', 100)" class="flex-1 bg-green-600 py-3 rounded-xl font-bold text-xs">完成</button>
+                            <button onclick="updateStatus('${item.id}', '已驳回', 0)" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs">驳回</button>
                         </div>
                     </div>`;
             });
@@ -271,18 +254,14 @@
 
         function updateStatus(id, status, progress) {
             const summary = document.getElementById('summary-' + id).value;
-            const reply = document.getElementById('reply-' + id).value || "已收到，正在处理。";
+            const reply = document.getElementById('reply-' + id).value || "已收到。";
             let list = getDB();
             list = list.map(i => i.id == id ? {...i, status, progress, reply, summary, handledBy: currentAdminName} : i);
             saveDB(list);
             renderAdmin();
         }
 
-        // 初始化加载
-        window.onload = () => {
-            renderPublic();
-            console.log("NWNU Feedback System V8.1 Initialized.");
-        };
+        window.onload = () => renderPublic();
     </script>
 </body>
 </html>
