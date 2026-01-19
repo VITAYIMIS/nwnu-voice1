@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NWNU 智慧建言 | 数字化治理平台</title>
-    <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.js"></script>
-    <link rel="stylesheet" href="https://lib.baomitu.com/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <style>
-        /* 移除 Google Fonts，改用标准中文字体库，解决国内加载白屏问题 */
+        /* 保持中文字体优化，不依赖谷歌服务 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; 
             background-color: #f8fafc; 
@@ -90,7 +90,7 @@
 
     <footer class="mt-20 py-10 text-center">
         <p class="text-gray-400 text-xs">© 西北师范大学数字化治理项目组</p>
-        <button onclick="showLoginModal()" class="text-gray-200 text-[10px] mt-2">鉴权入口</button>
+        <button onclick="showLoginModal()" class="text-gray-200 text-[10px] mt-2 underline">后台鉴权</button>
     </footer>
 
     <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
@@ -98,22 +98,21 @@
             <h4 class="text-xl font-bold mb-6 text-center italic">身份核验</h4>
             <input type="password" id="admin-pass" class="w-full border border-gray-200 rounded-xl p-4 mb-4 text-center tracking-widest outline-none" placeholder="输入管理暗号">
             <button onclick="loginAdmin()" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold">验证身份</button>
-            <button onclick="hideLoginModal()" class="w-full mt-2 text-gray-400 text-xs">取消</button>
+            <button onclick="hideLoginModal()" class="w-full mt-2 text-gray-400 text-xs text-center block">取消</button>
         </div>
     </div>
 
     <script>
-        /**
-         * 助理提醒：这里是未来接入 Supabase 的地方
-         * 目前暂时维持 LocalStorage 逻辑，方便你本地修改界面
-         */
+        // 管理员预设
         const USERS = { "nwnu1902": "校学生会管理员", "admin": "总管理员" };
         let currentAdminName = "";
         let adminDisplayFilter = 'pending';
 
+        // 数据存储逻辑
         function getDB() { return JSON.parse(localStorage.getItem('nwnu_v8_local') || '[]'); }
         function saveDB(list) { localStorage.setItem('nwnu_v8_local', JSON.stringify(list)); }
 
+        // 导航切换
         function switchTab(tab) {
             ['public', 'submit', 'mine', 'admin'].forEach(t => {
                 const sec = document.getElementById('section-' + t);
@@ -132,6 +131,7 @@
             if(tab === 'mine') renderMine();
         }
 
+        // 登录逻辑
         function showLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function hideLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
@@ -152,6 +152,7 @@
 
         function logoutAdmin() { location.reload(); }
 
+        // 表单处理
         function handleFormSubmit(e) {
             e.preventDefault();
             const data = {
@@ -172,6 +173,7 @@
             switchTab('mine');
         }
 
+        // 渲染公示列表
         function renderPublic() {
             const data = getDB();
             const keyword = document.getElementById('searchInput').value.toLowerCase();
@@ -193,88 +195,4 @@
 
             filtered.forEach(item => {
                 container.innerHTML += `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-gray-800 card-hover">
-                        <div class="flex justify-between items-center mb-3 text-[10px] font-bold">
-                            <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${item.dept}</span>
-                            <span class="text-gray-400">回复：${item.handledBy || '权益部'}</span>
-                        </div>
-                        <h4 class="text-sm font-bold mb-2">${item.summary || item.title}</h4>
-                        <div class="w-full bg-gray-100 h-1 rounded-full overflow-hidden mb-2">
-                            <div class="bg-blue-600 h-full" style="width: ${item.progress}%"></div>
-                        </div>
-                        <p class="text-[10px] text-gray-500 italic">进展：${item.reply || '正在处理中'}</p>
-                    </div>`;
-            });
-        }
-
-        function renderMine() {
-            const data = getDB();
-            const container = document.getElementById('mine-list');
-            container.innerHTML = data.length ? '' : '<div class="bg-white p-10 rounded-3xl text-center text-gray-400">还没有提交过建言哦</div>';
-            data.forEach(item => {
-                const color = item.status === '已驳回' ? 'text-red-500' : 'text-blue-600';
-                container.innerHTML += `
-                    <div class="bg-white p-6 rounded-2xl border-l-4 ${item.status==='已驳回'?'border-red-500':'border-blue-600'} shadow-md">
-                        <div class="flex justify-between items-center mb-4 text-xs font-bold">
-                            <span>${item.title}</span>
-                            <span class="${color}">${item.status}</span>
-                        </div>
-                        <div class="text-[11px] text-gray-500 mb-4 bg-gray-50 p-3 rounded-xl">
-                            <p><strong>现状：</strong>${item.issue}</p>
-                        </div>
-                        ${item.reply ? `<p class="p-3 bg-blue-50 rounded-xl text-[11px] text-blue-800 font-bold border border-blue-100">回复：${item.reply}</p>` : ''}
-                    </div>`;
-            });
-        }
-
-        function switchAdminFilter(f) {
-            adminDisplayFilter = f;
-            document.getElementById('filter-pending').className = (f === 'pending') ? 'flex-1 py-3 rounded-xl text-xs font-bold admin-tab-active' : 'flex-1 py-3 rounded-xl text-xs font-bold text-gray-400';
-            document.getElementById('filter-done').className = (f === 'done') ? 'flex-1 py-3 rounded-xl text-xs font-bold admin-tab-active' : 'flex-1 py-3 rounded-xl text-xs font-bold text-gray-400';
-            renderAdmin();
-        }
-
-        function renderAdmin() {
-            const data = getDB();
-            const container = document.getElementById('admin-list');
-            container.innerHTML = '';
-            const filtered = data.filter(i => adminDisplayFilter === 'pending' ? i.status === '待审核' : i.status !== '待审核');
-
-            filtered.forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-white/10 p-6 rounded-3xl border border-white/10 text-white shadow-xl">
-                        <div class="text-[10px] text-gray-500 mb-4 border-b border-white/5 pb-2 flex justify-between">
-                            <span>年级：${item.userType} | 电话：${item.phone}</span>
-                            <span class="text-blue-400 font-bold">${item.dept}</span>
-                        </div>
-                        <h4 class="text-lg font-bold mb-4">${item.title}</h4>
-                        <div class="bg-black/40 p-4 rounded-xl text-xs space-y-2 mb-6">
-                            <p><strong>描述：</strong>${item.issue}</p>
-                            <p><strong>建议：</strong>${item.solution}</p>
-                        </div>
-                        <div class="space-y-3">
-                            <input id="summary-${item.id}" class="w-full bg-black/40 border border-blue-500/30 rounded-xl p-3 text-xs text-white outline-none" placeholder="公开摘要（展示在公示中心）" value="${item.summary || ''}">
-                            <textarea id="reply-${item.id}" rows="2" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white outline-none" placeholder="给同学的正式回复...">${item.reply || ''}</textarea>
-                        </div>
-                        <div class="flex gap-2 mt-6">
-                            <button onclick="updateStatus('${item.id}', '已通过', 25)" class="flex-1 bg-blue-600 py-3 rounded-xl font-bold text-xs">通过并公示</button>
-                            <button onclick="updateStatus('${item.id}', '已完成', 100)" class="flex-1 bg-green-600 py-3 rounded-xl font-bold text-xs">处理完成</button>
-                            <button onclick="updateStatus('${item.id}', '已驳回', 0)" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs">驳回</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function updateStatus(id, status, progress) {
-            const summary = document.getElementById('summary-' + id).value;
-            const reply = document.getElementById('reply-' + id).value || "已收到，正在处理。";
-            let list = getDB();
-            list = list.map(i => i.id == id ? {...i, status, progress, reply, summary, handledBy: currentAdminName} : i);
-            saveDB(list);
-            renderAdmin();
-        }
-
-        window.onload = () => renderPublic();
-    </script>
-</body>
-</html>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-gray-800
